@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -18,7 +17,7 @@ func main() {
 	n := maelstrom.NewNode()
 
 	store := internal.NewSimpleStore()
-	// neibsState := model.NewNeibsState()
+	gossip := internal.NewGossip()
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
 		var body map[string]any
@@ -28,27 +27,21 @@ func main() {
 
 		m := body["message"]
 		v := m.(float64)
-
-		if store.Add(v) {
-			neibs := getRandomNodes(n.NodeIDs())
-
-			for _, neib := range neibs {
-				err := n.Send(neib, msg.Body)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		// for _, neib := range neibsState.GetNeibs() {
-		//	err := n.Send(neib, v)
-		//	if err != nil {
-		//		return err
-		//	}
-		// }
+		store.Add(v)
 
 		body["type"] = "broadcast_ok"
 		delete(body, "message")
+		return n.Reply(msg, body)
+	})
+
+	n.Handle("gossip", func(msg maelstrom.Message) error {
+		var body internal.GossipMsg
+		if err := json.Unmarshal(msg.Body, &body); err != nil {
+			return err
+		}
+
+		store.AddAll(body.Messages)
+
 		return n.Reply(msg, body)
 	})
 
@@ -70,16 +63,17 @@ func main() {
 			return err
 		}
 
-		// topology := body["topology"].(map[string]interface{})
-		// neibs := getNodesToBroadcast(topology, n.ID())
-		// neibsState.AddNeibs(neibs)
-
 		body["type"] = "topology_ok"
 		delete(body, "topology")
+
+		// start Gossip
+		gossip.Start(store, n)
+
 		return n.Reply(msg, body)
 	})
 
 	if err := n.Run(); err != nil {
+		gossip.Stop()
 		log.Printf("ERROR: %s", err)
 		os.Exit(1)
 	}
@@ -100,19 +94,4 @@ func getRandomNodes(nodeIDs []string) []string {
 	}
 
 	return res
-}
-
-func getNodesToBroadcast(topology map[string]interface{}, nodeId string) []string {
-
-	for key, value := range topology {
-		fmt.Printf("%s value is %v\n", key, value)
-	}
-
-	data := topology[nodeId].([]interface{})
-
-	var neibs []string
-	for _, val := range data {
-		neibs = append(neibs, val.(string))
-	}
-	return neibs
 }

@@ -23,6 +23,17 @@ func (store *SimpleStore) Add(key float64) bool {
 	}
 }
 
+func (store *SimpleStore) AddAll(keys []float64) bool {
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	for _, key := range keys {
+		store.set[key] = true
+	}
+
+	return true
+}
+
 func (store *SimpleStore) ReadAll() []float64 {
 	store.mu.Lock()
 	defer store.mu.Unlock()
