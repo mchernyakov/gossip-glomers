@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+const numNodes = 3
+
 func GetRandomNodes(nodeIDs []string) []string {
-	if len(nodeIDs) <= 3 {
+	if len(nodeIDs) <= numNodes {
 		return nodeIDs
 	}
 
@@ -14,7 +16,7 @@ func GetRandomNodes(nodeIDs []string) []string {
 	r := rand.New(s)
 
 	var res []string
-	for i := 0; i < 3; i++ {
+	for i := 0; i < numNodes; i++ {
 		id := r.Intn(len(nodeIDs))
 		res = append(res, nodeIDs[id])
 	}

@@ -27,20 +27,14 @@ func main() {
 		m := body["message"]
 		v := m.(float64)
 		store.Add(v)
+		_, ok := body["gossip"]
+		if !ok {
+			body["gossip"] = true
+			internal.Broadcast(n, body)
+		}
 
 		rsp := &model.SimpleResp{Type: "broadcast_ok"}
 		return n.Reply(msg, rsp)
-	})
-
-	n.Handle("gossip", func(msg maelstrom.Message) error {
-		var body internal.GossipMsg
-		if err := json.Unmarshal(msg.Body, &body); err != nil {
-			return err
-		}
-
-		store.AddAll(body.Messages)
-
-		return n.Reply(msg, body)
 	})
 
 	n.Handle("read", func(msg maelstrom.Message) error {

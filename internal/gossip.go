@@ -18,9 +18,14 @@ type GossipMsg struct {
 	Messages []float64 `json:"messages"`
 }
 
+type GossipSingleMsg struct {
+	Type    string  `json:"type"`
+	Message float64 `json:"message"`
+}
+
 func NewGossip() *Gossip {
 	return &Gossip{
-		ticker:   time.NewTicker(100 * time.Millisecond),
+		ticker:   time.NewTicker(50 * time.Millisecond),
 		doneChan: make(chan bool),
 	}
 }
