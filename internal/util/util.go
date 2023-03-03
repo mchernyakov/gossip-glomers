@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-const numNodes = 3
+const numNodes = 5
 
-func GetRandomNodes(nodeIDs []string) []string {
-	if len(nodeIDs) <= numNodes {
+func GetRandomNodes(nodeIDs []string, num int) []string {
+	if len(nodeIDs) <= num {
 		return nodeIDs
 	}
 
@@ -16,10 +16,14 @@ func GetRandomNodes(nodeIDs []string) []string {
 	r := rand.New(s)
 
 	var res []string
-	for i := 0; i < numNodes; i++ {
+	for i := 0; i < num; i++ {
 		id := r.Intn(len(nodeIDs))
 		res = append(res, nodeIDs[id])
 	}
 
 	return res
+}
+
+func GetRandomNodesDefault(nodeIDs []string) []string {
+	return GetRandomNodes(nodeIDs, numNodes)
 }

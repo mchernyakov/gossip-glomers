@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"time"
 
 	"gossip-glomers/internal/util"
@@ -30,7 +31,7 @@ func NewGossip() *Gossip {
 	}
 }
 
-func (gossip Gossip) Start(store *SimpleStore, node *maelstrom.Node) {
+func (gossip Gossip) Start(store *SimpleStore, node *maelstrom.Node, maxNodes int) {
 	go func() {
 		for {
 			select {
@@ -38,7 +39,7 @@ func (gossip Gossip) Start(store *SimpleStore, node *maelstrom.Node) {
 				gossip.ticker.Stop()
 				return
 			case <-gossip.ticker.C:
-				err := doGossip(store, node)
+				err := doGossip(store, node, maxNodes)
 				if err != nil {
 					return
 				}
@@ -47,22 +48,27 @@ func (gossip Gossip) Start(store *SimpleStore, node *maelstrom.Node) {
 	}()
 }
 
-func doGossip(store *SimpleStore, node *maelstrom.Node) error {
-	nodeIds := node.NodeIDs()
-	neibs := util.GetRandomNodes(nodeIds)
+func doGossip(store *SimpleStore, currNode *maelstrom.Node, maxNodes int) error {
+	nodeIds := currNode.NodeIDs()
+	neibs := util.GetRandomNodes(nodeIds, maxNodes)
 
 	data := store.ReadAll()
 
-	gmsg := &GossipMsg{
+	body := &GossipMsg{
 		Type:     "gossip",
 		Messages: data,
 	}
 
 	for _, neib := range neibs {
-		err := node.Send(neib, gmsg)
-		if err != nil {
-			return err
-		}
+		dst := neib
+		go func() {
+			for {
+				_, err := currNode.SyncRPC(context.Background(), dst, body)
+				if err == nil {
+					break
+				}
+			}
+		}()
 	}
 	return nil
 }

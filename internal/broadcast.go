@@ -1,6 +1,10 @@
 package internal
 
-import maelstrom "github.com/jepsen-io/maelstrom/demo/go"
+import (
+	"context"
+
+	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
+)
 
 func Broadcast(currNode *maelstrom.Node, body map[string]any) {
 	nodes := currNode.NodeIDs()
@@ -12,7 +16,8 @@ func Broadcast(currNode *maelstrom.Node, body map[string]any) {
 		dst := node
 		go func() {
 			for {
-				err := currNode.Send(dst, body)
+				msg, err := currNode.SyncRPC(context.Background(), dst, body)
+				println(msg.Body)
 				if err == nil {
 					break
 				}

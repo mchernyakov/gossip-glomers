@@ -57,6 +57,7 @@ func main() {
 
 	n.Handle("topology", func(msg maelstrom.Message) error {
 		rsp := &model.SimpleResp{Type: "topology_ok"}
+		gossip.Start(store, n, 5)
 		return n.Reply(msg, rsp)
 	})
 
