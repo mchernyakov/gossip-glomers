@@ -42,10 +42,7 @@ func main() {
 		m := body["delta"]
 		v := int(m.(float64))
 
-		// _, ok := body["round"]
-
 		counter.mu.Lock()
-		// counter.value = counter.value + int(v)
 		for {
 			val, err0 := kv.Read(context.Background(), key)
 			if err0 != nil {
