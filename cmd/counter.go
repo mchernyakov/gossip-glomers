@@ -13,14 +13,12 @@ import (
 )
 
 const (
-	key   = "key"
-	round = "round"
+	key = "key"
 )
 
 type Counter struct {
 	value   int
 	mu      sync.Mutex
-	round   map[float64]bool
 	current int
 }
 
@@ -30,8 +28,7 @@ func main() {
 
 	kv := maelstrom.NewSeqKV(n)
 
-	counter := &Counter{value: 0,
-		round: make(map[float64]bool)}
+	counter := &Counter{value: 0}
 
 	n.Handle("add", func(msg maelstrom.Message) error {
 		var body map[string]any
