@@ -12,7 +12,7 @@ import (
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
 
-type Counter struct {
+type SeqCounter struct {
 	seq      atomic.Int64
 	nodeId   uint32
 	lastTime int64
@@ -23,7 +23,7 @@ func main() {
 	s := rand.NewSource(time.Now().UnixNano())
 	randId := rand.New(s).Intn(100-1) + 1
 
-	counter := &Counter{
+	counter := &SeqCounter{
 		seq:      atomic.Int64{},
 		nodeId:   uint32(randId),
 		lastTime: 0,
@@ -50,7 +50,7 @@ func main() {
 	}
 }
 
-func generateId(counter *Counter) int64 {
+func generateId(counter *SeqCounter) int64 {
 	ts := getTime(counter)
 	var id = ts << 22
 	id = id | int64(counter.nodeId)<<15
@@ -59,7 +59,7 @@ func generateId(counter *Counter) int64 {
 	return id
 }
 
-func getTime(counter *Counter) int64 {
+func getTime(counter *SeqCounter) int64 {
 	counter.mu.Lock()
 	defer counter.mu.Unlock()
 
