@@ -1,12 +1,19 @@
 package internal
 
 import (
-	"context"
-
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
 
-func Broadcast(currNode *maelstrom.Node, body map[string]any) {
+// var roundCounter atomic.Int64
+
+// var roundMap map[uint64]bool
+
+// var mu sync.Mutex
+
+func Broadcast(currNode *maelstrom.Node, body map[string]any, data []float64) {
+	// c := roundCounter.Add(1)
+	// body["round"] = c
+	body["messages"] = data
 	nodes := currNode.NodeIDs()
 	for _, node := range nodes {
 		if node == currNode.ID() {
@@ -16,8 +23,7 @@ func Broadcast(currNode *maelstrom.Node, body map[string]any) {
 		dst := node
 		go func() {
 			for {
-				msg, err := currNode.SyncRPC(context.Background(), dst, body)
-				println(msg.Body)
+				err := currNode.Send(dst, body)
 				if err == nil {
 					break
 				}
