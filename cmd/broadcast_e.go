@@ -17,7 +17,7 @@ func main() {
 	n := maelstrom.NewNode()
 
 	store := internal.NewSimpleStore()
-	gossip := internal.NewGossip(100 * time.Millisecond)
+	bc := internal.NewBroadcast(600*time.Millisecond, store)
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
 		var body map[string]any
@@ -28,7 +28,7 @@ func main() {
 		m := body["message"]
 		v := m.(float64)
 		store.Add(v)
-
+		bc.Add(v)
 		rsp := &model.SimpleResp{Type: "broadcast_ok"}
 		return n.Reply(msg, rsp)
 	})
@@ -58,12 +58,12 @@ func main() {
 
 	n.Handle("topology", func(msg maelstrom.Message) error {
 		rsp := &model.SimpleResp{Type: "topology_ok"}
-		gossip.Start(store, n, 5)
+		bc.Start(n)
 		return n.Reply(msg, rsp)
 	})
 
 	if err := n.Run(); err != nil {
-		gossip.Stop()
+		bc.Stop()
 		log.Printf("ERROR: %s", err)
 		os.Exit(1)
 	}

@@ -16,7 +16,6 @@ func main() {
 	n := maelstrom.NewNode()
 
 	store := internal.NewSimpleStore()
-	gossip := internal.NewGossip()
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
 		var body map[string]any
@@ -41,7 +40,7 @@ func main() {
 		_, ok := body["gossip"]
 		if !ok {
 			body["gossip"] = true
-			internal.Broadcast(n, body, store.ReadAll())
+			internal.SimpleBroadcast(n, body, store.ReadAll())
 		}
 
 		return n.Reply(msg, rsp)
@@ -65,7 +64,6 @@ func main() {
 	})
 
 	if err := n.Run(); err != nil {
-		gossip.Stop()
 		log.Printf("ERROR: %s", err)
 		os.Exit(1)
 	}

@@ -12,6 +12,9 @@ build-broadcast:
 build-broadcast-d:
 	go build -o build/bin/broadcast-d cmd/broadcast_d.go
 
+build-broadcast-e:
+	go build -o build/bin/broadcast-e cmd/broadcast_e.go
+
 build-counter:
 	go build -o build/bin/maelstrom-counter cmd/counter.go
 
@@ -29,6 +32,12 @@ test-broadcast-d0:
 
 test-broadcast-d1:
 	@cd maelstrom; ./maelstrom test -w broadcast --bin ../build/bin/broadcast-d --node-count 25 --time-limit 20 --rate 100 --latency 100 --nemesis partition
+
+test-broadcast-e0:
+	@cd maelstrom; ./maelstrom test -w broadcast --bin ../build/bin/broadcast-e --node-count 25 --time-limit 20 --rate 100 --latency 100
+
+test-broadcast-e1:
+	@cd maelstrom; ./maelstrom test -w broadcast --bin ../build/bin/broadcast-e --node-count 25 --time-limit 20 --rate 100 --latency 100 --nemesis partition
 
 test-counter:
 	@cd maelstrom; ./maelstrom test -w g-counter --bin ../build/bin/maelstrom-counter --node-count 3 --rate 100 --time-limit 20 --nemesis partition

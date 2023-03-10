@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	"time"
 
 	"gossip-glomers/internal/util"
@@ -24,9 +23,9 @@ type GossipSingleMsg struct {
 	Message float64 `json:"message"`
 }
 
-func NewGossip() *Gossip {
+func NewGossip(d time.Duration) *Gossip {
 	return &Gossip{
-		ticker:   time.NewTicker(50 * time.Millisecond),
+		ticker:   time.NewTicker(d),
 		doneChan: make(chan bool),
 	}
 }
@@ -60,10 +59,14 @@ func doGossip(store *SimpleStore, currNode *maelstrom.Node, maxNodes int) error 
 	}
 
 	for _, neib := range neibs {
+		if neib == currNode.ID() {
+			continue
+		}
+
 		dst := neib
 		go func() {
 			for {
-				_, err := currNode.SyncRPC(context.Background(), dst, body)
+				err := currNode.Send(dst, body)
 				if err == nil {
 					break
 				}
