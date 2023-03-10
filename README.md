@@ -19,7 +19,7 @@ machine id and an internal counter.
 All broadcast solutions are a simplified version of gossip protocol,
 [a good article from Martin Fowler](https://martinfowler.com/articles/patterns-of-distributed-systems/gossip-dissemination.html).
 
-[Broadcast a,b,c ](cmd/broadcast.go) -- a simple version, everyone send to everyone.
+[Broadcast a,b,c ](cmd/broadcast.go) -- everyone sends to everyone.
 
 [Broadcast d](cmd/broadcast_d.go) uses optimized version, 
 where only first receiver propagates data to others.
@@ -29,7 +29,7 @@ then the received data is transmitted to other nodes according to a scheduled in
 
 ### Challenge 4: Grow-Only Counter
 
-[The solution](cmd/counter.go) is based on simple 
+[The solution](cmd/counter.go) is based on
 [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) 
 logic.
 
