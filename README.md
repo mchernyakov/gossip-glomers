@@ -11,8 +11,8 @@ and [Kyle Kingsbury](https://aphyr.com/).
 
 ### Challenge 2: Unique Id Generation
 
-[The solution](cmd/unique_ids.go) is generates unique int64 id based on timestamp, 
-machine id and an internal counter.
+[The solution](cmd/unique_ids.go) generates unique int64 id based on timestamp, 
+machine-id and an internal counter.
 
 ### Challenge 3: Broadcast
 
