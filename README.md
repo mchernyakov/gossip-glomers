@@ -57,5 +57,6 @@ The project tree
 └── maelstrom // maelstrom is in the root, but under gitignore
 ```
 
-I use Makefile for building and running solutions. 
+I use Makefile for building and running solutions.
+
 Note that custom names of bin-files are used.

@@ -18,6 +18,9 @@ build-broadcast-e:
 build-counter:
 	go build -o build/bin/maelstrom-counter cmd/counter.go
 
+build-kafka:
+	go build -o build/bin/maelstrom-kafka cmd/kafka.go
+
 test-echo:
 	@cd maelstrom; ./maelstrom test -w echo --bin ../build/bin/echo --node-count 1 --time-limit 10
 
@@ -41,3 +44,6 @@ test-broadcast-e1:
 
 test-counter:
 	@cd maelstrom; ./maelstrom test -w g-counter --bin ../build/bin/maelstrom-counter --node-count 3 --rate 100 --time-limit 20 --nemesis partition
+
+test-kafka:
+	@cd maelstrom; ./maelstrom test -w kafka --bin ../build/bin/maelstrom-kafka --node-count 1 --concurrency 2n --time-limit 20 --rate 1000
