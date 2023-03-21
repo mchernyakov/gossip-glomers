@@ -39,7 +39,9 @@ Articles:
 
 ### Challenge 5: Kafka-Style Log
 
-_COMING SOON_
+Articles:
+- https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/
+- https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-2-data-replication/
 
 ## Project structure
 

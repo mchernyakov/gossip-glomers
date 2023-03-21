@@ -40,7 +40,7 @@ func (store *KafkaStore) CommitOffsets(offsets map[string]any) {
 	}
 }
 
-func (store *KafkaStore) Send(key string, record float64) int {
+func (store *KafkaStore) Add(key string, record float64) int {
 	store.mu.Lock()
 	defer store.mu.Unlock()
 

@@ -21,6 +21,9 @@ build-counter:
 build-kafka:
 	go build -o build/bin/maelstrom-kafka cmd/kafka.go
 
+build-kafka-b:
+	go build -o build/bin/maelstrom-kafka-b cmd/kafka_b.go
+
 test-echo:
 	@cd maelstrom; ./maelstrom test -w echo --bin ../build/bin/echo --node-count 1 --time-limit 10
 
@@ -47,3 +50,6 @@ test-counter:
 
 test-kafka:
 	@cd maelstrom; ./maelstrom test -w kafka --bin ../build/bin/maelstrom-kafka --node-count 1 --concurrency 2n --time-limit 20 --rate 1000
+
+test-kafka-b:
+	@cd maelstrom; ./maelstrom test -w kafka --bin ../build/bin/maelstrom-kafka-b --node-count 2 --concurrency 2n --time-limit 20 --rate 1000

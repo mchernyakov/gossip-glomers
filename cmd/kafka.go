@@ -25,7 +25,7 @@ func main() {
 
 		key := body["key"].(string)
 		value := body["msg"].(float64)
-		offset := kafka.Send(key, value)
+		offset := kafka.Add(key, value)
 
 		resp := make(map[string]any)
 		resp["type"] = "send_ok"
