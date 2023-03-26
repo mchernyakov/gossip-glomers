@@ -5,22 +5,22 @@ import (
 )
 
 type KafkaStore struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	commits map[string]int   // topic -> committed offset
 	data    map[string][]int // topic -> data (offset -- index)
 }
 
 func NewKafkaStore() *KafkaStore {
 	return &KafkaStore{
-		mu:      sync.Mutex{},
+		mu:      sync.RWMutex{},
 		commits: make(map[string]int),
 		data:    make(map[string][]int),
 	}
 }
 
 func (store *KafkaStore) ListCommittedOffsets(req []interface{}) map[string]int {
-	store.mu.Lock()
-	defer store.mu.Unlock()
+	store.mu.RLock()
+	defer store.mu.RUnlock()
 
 	res := make(map[string]int)
 	for _, topic := range req {
@@ -60,8 +60,8 @@ func (store *KafkaStore) Add(key string, record float64) int {
 }
 
 func (store *KafkaStore) Poll(req map[string]any) map[string][][2]int {
-	store.mu.Lock()
-	defer store.mu.Unlock()
+	store.mu.RLock()
+	defer store.mu.RUnlock()
 
 	res := make(map[string][][2]int)
 	for k, v := range req {

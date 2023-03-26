@@ -39,9 +39,17 @@ Articles:
 
 ### Challenge 5: Kafka-Style Log
 
+Solutions are based on single writer/multiple-readers approach:
+- using linearizable-KV we can set up our leader (partition-leader), which serves all writes (readers redirect writes to the leader).
+- reads are served by every node.
+
 Articles:
 - https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-1-storage-mechanics/
 - https://bravenewgeek.com/building-a-distributed-log-from-scratch-part-2-data-replication/
+
+### Challenge 6: Totally-Available Transactions
+
+_COMING SOON_
 
 ## Project structure
 
