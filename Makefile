@@ -27,6 +27,9 @@ build-kafka-b:
 build-kafka-c:
 	go build -o build/bin/maelstrom-kafka-c cmd/kafka_c.go
 
+build-txn:
+	go build -o build/bin/maelstrom-txn cmd/txn.go
+
 test-echo:
 	@cd maelstrom; ./maelstrom test -w echo --bin ../build/bin/echo --node-count 1 --time-limit 10
 
@@ -59,3 +62,6 @@ test-kafka-b:
 
 test-kafka-c:
 	@cd maelstrom; ./maelstrom test -w kafka --bin ../build/bin/maelstrom-kafka-c --node-count 2 --concurrency 2n --time-limit 20 --rate 1000
+
+test-txn:
+	@cd maelstrom; ./maelstrom test -w txn-rw-register --bin ../build/bin/maelstrom-txn --node-count 1 --time-limit 20 --rate 1000 --concurrency 2n --consistency-models read-uncommitted --availability total
