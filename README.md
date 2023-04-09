@@ -49,7 +49,11 @@ Articles:
 
 ### Challenge 6: Totally-Available Transactions
 
-_COMING SOON_
+[Txn b](cmd/txn_b.go): based in snapshots and _last-write-win_ model. 
+Also, it broadcasts all writes to other nodes.
+
+Articles:
+- https://jepsen.io/consistency
 
 ## Project structure
 
