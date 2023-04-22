@@ -21,10 +21,10 @@ All broadcast solutions are a simplified version of gossip protocol,
 
 [Broadcast a,b,c ](cmd/broadcast.go) -- everyone sends to everyone.
 
-[Broadcast d](cmd/broadcast_d.go) uses optimized version, 
-where only first receiver propagates data to others.
+[Broadcast d](cmd/broadcast_d.go) uses an optimized version, 
+where only the first receiver propagates data to others.
 
-[Broadcast e](cmd/broadcast_d.go) uses more optimized version: a receiver collects data,
+[Broadcast e](cmd/broadcast_d.go) uses a more optimized version: a receiver collects data,
 then the received data is transmitted to other nodes according to a scheduled interval.
 
 ### Challenge 4: Grow-Only Counter
