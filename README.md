@@ -49,7 +49,7 @@ Articles:
 
 ### Challenge 6: Totally-Available Transactions
 
-[Txn b](cmd/txn_b.go): based in snapshots and _last-write-win_ model. 
+[Txn b](cmd/txn_b.go): based on snapshots and _last-write-win_ model. 
 Also, it broadcasts all writes to other nodes.
 
 Articles:
