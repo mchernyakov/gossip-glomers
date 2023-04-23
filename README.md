@@ -53,7 +53,7 @@ Articles:
 Also, it broadcasts all writes to other nodes.
 
 [Txn c](cmd/txn_c.go): initially, I thought about something more sophisticated like proper MVCC, 
-but then turned out snapshots (again) + broadcasting the whole store works.
+but then it turned out (and proved by [@elh's solution](https://github.com/elh/gossip-glomers)) that snapshots (again) + broadcasting the whole store works.
 There is still room for optimizations like propagating partial store (via vector clocks?).
 
 Articles:
