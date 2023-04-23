@@ -52,8 +52,14 @@ Articles:
 [Txn b](cmd/txn_b.go): based on snapshots and _last-write-win_ model. 
 Also, it broadcasts all writes to other nodes.
 
+[Txn c](cmd/txn_c.go): initially, I thought about something more sophisticated like proper MVCC, 
+but then turned out snapshots (again) + broadcasting the whole store works.
+There is still room for optimizations like propagating partial store (via vector clocks?).
+
 Articles:
 - https://jepsen.io/consistency
+- https://vldb.org/pvldb/vol5/p298_per-akelarson_vldb2012.pdf
+- https://ebrary.net/64772/computer_science/implementing_read_committed
 
 ## Project structure
 

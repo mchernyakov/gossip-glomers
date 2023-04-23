@@ -7,46 +7,54 @@ import (
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
 
-type Value struct {
-	val     float64
-	version int
-}
-
-type TxnStoreV struct {
+type TxnStoreVc struct {
 	store map[float64]*Value
 	mu    sync.Mutex
 }
 
-func NewTxnStoreV() *TxnStoreV {
-	return &TxnStoreV{store: make(map[float64]*Value)}
+func NewTxnStoreVc() *TxnStoreVc {
+	return &TxnStoreVc{store: make(map[float64]*Value)}
 }
 
-func (s *TxnStoreV) Update(key any, value any, version any) {
+func (s *TxnStoreVc) Update(snapShot map[float64]any) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	k := key.(float64)
-	val := value.(float64)
-	ver := int(version.(float64))
+	for k, v := range snapShot {
+		val := v.(Value)
+		s.writeToStore(k, &val)
+	}
+}
 
-	prev, ok := s.store[k]
+func (s *TxnStoreVc) updateCurrent(snapShot map[float64]Value) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for k, v := range snapShot {
+		s.writeToStore(k, &v)
+	}
+}
+
+func (s *TxnStoreVc) writeToStore(key float64, value *Value) {
+	ver := value.version
+	prev, ok := s.store[key]
 	if ok {
 		pv := prev.version
 		if pv < ver {
-			s.store[k] = &Value{
-				val:     val,
+			s.store[key] = &Value{
+				val:     value.val,
 				version: ver,
 			}
 		}
 	} else {
-		s.store[k] = &Value{
-			val:     val,
+		s.store[key] = &Value{
+			val:     value.val,
 			version: ver,
 		}
 	}
 }
 
-func (s *TxnStoreV) PerformTxn(txn []interface{}, n *maelstrom.Node) [][]interface{} {
+func (s *TxnStoreVc) PerformTxn(txn []interface{}, n *maelstrom.Node) [][]interface{} {
 	var snapShot map[float64]Value
 	s.mu.Lock()
 	snapShot = deepCopy(s.store)
@@ -74,49 +82,42 @@ func (s *TxnStoreV) PerformTxn(txn []interface{}, n *maelstrom.Node) [][]interfa
 			// write
 			key = op[1].(float64)
 			value = op[2].(float64)
+
+			nv := 0
+
 			prev, ok := snapShot[key]
 			if ok {
-				nv := prev.version + 1
-				snapShot[key] = Value{
-					val:     value,
-					version: nv,
-				}
+				nv = prev.version + 1
+			}
 
-				broadcast(n, key, value, nv)
-			} else {
-				snapShot[key] = Value{
-					val:     value,
-					version: 0,
-				}
-
-				broadcast(n, key, value, 0)
+			snapShot[key] = Value{
+				val:     value,
+				version: nv,
 			}
 
 			res = append(res, []interface{}{t, key, value})
 		}
 	}
-	return res
-}
 
-func deepCopy(store map[float64]*Value) map[float64]Value {
-	res := make(map[float64]Value)
-	for k, v := range store {
-		res[k] = *v
-	}
+	s.updateCurrent(snapShot)
+
+	broadcastStore(n, snapShot)
 
 	return res
 }
 
-func broadcast(n *maelstrom.Node, key float64, value float64, version int) {
+func broadcastStore(n *maelstrom.Node, snapShot map[float64]Value) {
 	nodes := n.NodeIDs()
 
 	body := make(map[string]any)
 	body["type"] = "gossip"
-	body["key"] = key
-	body["value"] = value
-	body["version"] = version
+	body["snapshot"] = snapShot
 
 	for _, node := range nodes {
+		if n.ID() == node {
+			continue
+		}
+
 		dst := node
 		go func() {
 			for {
@@ -126,5 +127,6 @@ func broadcast(n *maelstrom.Node, key float64, value float64, version int) {
 				}
 			}
 		}()
+
 	}
 }

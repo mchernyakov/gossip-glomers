@@ -33,6 +33,9 @@ build-txn:
 build-txn-b:
 	go build -o build/bin/maelstrom-txn-b cmd/txn_b.go
 
+build-txn-c:
+	go build -o build/bin/maelstrom-txn-c cmd/txn_c.go
+
 test-echo:
 	@cd maelstrom; ./maelstrom test -w echo --bin ../build/bin/echo --node-count 1 --time-limit 10
 
@@ -74,3 +77,6 @@ test-txn-b:
 
 test-txn-b-1:
 	@cd maelstrom; ./maelstrom test -w txn-rw-register --bin ../build/bin/maelstrom-txn-b --node-count 2 --concurrency 2n --time-limit 20 --rate 1000 --consistency-models read-uncommitted --availability total --nemesis partition
+
+test-txn-c:
+	@cd maelstrom; ./maelstrom test -w txn-rw-register --bin ../build/bin/maelstrom-txn-c --node-count 2 --concurrency 2n --time-limit 20 --rate 1000 --consistency-models read-committed --availability total --nemesis partition
