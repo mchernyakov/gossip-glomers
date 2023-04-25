@@ -61,6 +61,7 @@ func (s *TxnStoreVc) PerformTxn(txn []interface{}, n *maelstrom.Node) [][]interf
 	s.mu.Unlock()
 
 	var res [][]interface{}
+	broadcastData := make(map[float64]Value)
 
 	for _, opr := range txn {
 		op := opr.([]any)
@@ -90,18 +91,22 @@ func (s *TxnStoreVc) PerformTxn(txn []interface{}, n *maelstrom.Node) [][]interf
 				nv = prev.version + 1
 			}
 
-			snapShot[key] = Value{
+			record := Value{
 				val:     value,
 				version: nv,
 			}
 
+			snapShot[key] = record
+
 			res = append(res, []interface{}{t, key, value})
+
+			broadcastData[key] = record
 		}
 	}
 
 	s.updateCurrent(snapShot)
 
-	broadcastStore(n, snapShot)
+	broadcastStore(n, broadcastData)
 
 	return res
 }
