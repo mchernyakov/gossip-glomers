@@ -9,86 +9,101 @@ import (
 )
 
 type BroadcastEntity struct {
-	mu             sync.Mutex
-	ticker         *time.Ticker
-	broadcastStore map[float64]bool
-	mainStore      *SimpleStore
-	doneChan       chan bool
+	mu        sync.Mutex
+	interval  time.Duration
+	timeout   time.Duration
+	fresh     map[float64]struct{}
+	pending   map[string]map[float64]struct{}
+	inFlight  map[string]bool
+	done      chan struct{}
+	startOnce sync.Once
+	stopOnce  sync.Once
 }
 
-func NewBroadcast(d time.Duration, mainStore *SimpleStore) *BroadcastEntity {
+func NewBroadcast(interval, timeout time.Duration) *BroadcastEntity {
 	return &BroadcastEntity{
-		mu:             sync.Mutex{},
-		ticker:         time.NewTicker(d),
-		broadcastStore: make(map[float64]bool),
-		doneChan:       make(chan bool),
-		mainStore:      mainStore,
+		interval: interval,
+		timeout:  timeout,
+		fresh:    make(map[float64]struct{}),
+		pending:  make(map[string]map[float64]struct{}),
+		inFlight: make(map[string]bool),
+		done:     make(chan struct{}),
 	}
 }
 
 func (bc *BroadcastEntity) Add(val float64) {
 	bc.mu.Lock()
 	defer bc.mu.Unlock()
-	bc.broadcastStore[val] = true
+	bc.fresh[val] = struct{}{}
 }
 
 func (bc *BroadcastEntity) Start(node *maelstrom.Node) {
-	go func() {
-		for {
-			select {
-			case <-bc.doneChan:
-				bc.ticker.Stop()
-				return
-			case <-bc.ticker.C:
-				bc.doBroadcast(node)
-			}
-		}
-	}()
-}
-
-func (bc *BroadcastEntity) doBroadcast(currNode *maelstrom.Node) {
-	bcData := bc.getAll()
-	if len(bcData) == 0 {
-		return
-	}
-	data := append(bcData, bc.mainStore.ReadAll()...)
-	body := &GossipMsg{
-		Type:     "gossip",
-		Messages: data,
-	}
-
-	nodes := currNode.NodeIDs()
-	for _, neib := range nodes {
-		if neib == currNode.ID() {
-			continue
-		}
-
-		dst := neib
+	bc.startOnce.Do(func() {
 		go func() {
+			ticker := time.NewTicker(bc.interval)
+			defer ticker.Stop()
 			for {
-				_, err := currNode.SyncRPC(context.Background(), dst, body)
-				if err == nil {
-					break
+				select {
+				case <-bc.done:
+					return
+				case <-ticker.C:
+					bc.flush(node)
 				}
 			}
 		}()
-	}
-}
-
-func (bc *BroadcastEntity) getAll() []float64 {
-	bc.mu.Lock()
-	defer bc.mu.Unlock()
-
-	var all []float64
-	for key := range bc.broadcastStore {
-		all = append(all, key)
-	}
-	bc.broadcastStore = make(map[float64]bool)
-	return all
+	})
 }
 
 func (bc *BroadcastEntity) Stop() {
-	bc.doneChan <- true
+	bc.stopOnce.Do(func() { close(bc.done) })
+}
+
+func (bc *BroadcastEntity) flush(node *maelstrom.Node) {
+	bc.mu.Lock()
+	defer bc.mu.Unlock()
+
+	for _, peer := range node.NodeIDs() {
+		if peer == node.ID() {
+			continue
+		}
+		if len(bc.fresh) > 0 {
+			p, ok := bc.pending[peer]
+			if !ok {
+				p = make(map[float64]struct{})
+				bc.pending[peer] = p
+			}
+			for v := range bc.fresh {
+				p[v] = struct{}{}
+			}
+		}
+		if bc.inFlight[peer] || len(bc.pending[peer]) == 0 {
+			continue
+		}
+		batch := make([]float64, 0, len(bc.pending[peer]))
+		for v := range bc.pending[peer] {
+			batch = append(batch, v)
+		}
+		bc.inFlight[peer] = true
+		go bc.send(node, peer, batch)
+	}
+	bc.fresh = make(map[float64]struct{})
+}
+
+func (bc *BroadcastEntity) send(node *maelstrom.Node, peer string, batch []float64) {
+	ctx, cancel := context.WithTimeout(context.Background(), bc.timeout)
+	defer cancel()
+
+	_, err := node.SyncRPC(ctx, peer, &GossipMsg{Type: "gossip", Messages: batch})
+
+	bc.mu.Lock()
+	defer bc.mu.Unlock()
+	bc.inFlight[peer] = false
+	if err != nil {
+		return
+	}
+	for _, v := range batch {
+		delete(bc.pending[peer], v)
+	}
 }
 
 func SimpleBroadcast(currNode *maelstrom.Node, body map[string]any, data []float64) {
