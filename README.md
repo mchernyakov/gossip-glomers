@@ -7,11 +7,11 @@ and [Kyle Kingsbury](https://aphyr.com/).
 
 ### Challenge 1: Echo
 
-[Echo](cmd/echo.go) -- a simple echo, nothing fancy.
+[Echo](cmd/echo/main.go) -- a simple echo, nothing fancy.
 
 ### Challenge 2: Unique Id Generation
 
-[The solution](cmd/unique_ids.go) generates unique int64 id based on timestamp, 
+[The solution](cmd/unique-ids/main.go) generates unique int64 id based on timestamp, 
 machine-id and an internal counter.
 
 ### Challenge 3: Broadcast
@@ -19,17 +19,20 @@ machine-id and an internal counter.
 All broadcast solutions are a simplified version of gossip protocol,
 [a good article from Martin Fowler](https://martinfowler.com/articles/patterns-of-distributed-systems/gossip-dissemination.html).
 
-[Broadcast a,b,c ](cmd/broadcast.go) -- everyone sends to everyone.
+[Broadcast a,b,c ](cmd/broadcast/main.go) -- everyone sends to everyone.
 
-[Broadcast d](cmd/broadcast_d.go) uses an optimized version, 
+[Broadcast d](cmd/broadcast-d/main.go) uses an optimized version, 
 where only the first receiver propagates data to others.
 
-[Broadcast e](cmd/broadcast_d.go) uses a more optimized version: a receiver collects data,
+[Broadcast e](cmd/broadcast-e/main.go) uses a more optimized version: a receiver collects data,
 then the received data is transmitted to other nodes according to a scheduled interval.
+Each peer has its own pending set: only new values are sent (not the whole store),
+a value is removed from the set only after the peer acks it, and there is at most one in-flight RPC per peer
+(with a timeout), so partitions don't pile up goroutines.
 
 ### Challenge 4: Grow-Only Counter
 
-[The solution](cmd/counter.go) is based on
+[The solution](cmd/counter/main.go) is based on
 [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) 
 logic.
 
@@ -49,10 +52,10 @@ Articles:
 
 ### Challenge 6: Totally-Available Transactions
 
-[Txn b](cmd/txn_b.go): based on snapshots and _last-write-wins_ model. 
+[Txn b](cmd/txn-b/main.go): based on snapshots and _last-write-wins_ model. 
 Also, it broadcasts all writes to other nodes.
 
-[Txn c](cmd/txn_c.go): initially, I thought about something more sophisticated like proper MVCC, 
+[Txn c](cmd/txn-c/main.go): initially, I thought about something more sophisticated like proper MVCC, 
 but then it turned out (and proved by [@elh's solution](https://github.com/elh/gossip-glomers)) 
 that snapshots (again) + broadcasting writes work.
 
