@@ -50,7 +50,7 @@ func (store *SimpleStore) ReadAll() []float64 {
 	store.mu.Lock()
 	defer store.mu.Unlock()
 
-	var all []float64
+	all := make([]float64, 0, len(store.set))
 	for key := range store.set {
 		all = append(all, key)
 	}

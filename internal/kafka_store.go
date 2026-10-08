@@ -68,7 +68,7 @@ func (store *KafkaStore) Poll(req map[string]any) map[string][][2]int {
 		commit := int(v.(float64))
 
 		dataArr := store.data[k]
-		if len(dataArr) == 0 {
+		if commit < 0 || commit >= len(dataArr) {
 			continue
 		}
 
