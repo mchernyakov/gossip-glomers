@@ -12,25 +12,31 @@ import (
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
 )
 
-func main() {
+type broadcastReq struct {
+	Message float64 `json:"message"`
+}
 
+type readResp struct {
+	Type     string    `json:"type"`
+	Messages []float64 `json:"messages"`
+}
+
+func main() {
 	n := maelstrom.NewNode()
 
 	store := internal.NewSimpleStore()
-	bc := internal.NewBroadcast(600*time.Millisecond, store)
+	bc := internal.NewBroadcast(600*time.Millisecond, time.Second)
 
 	n.Handle("broadcast", func(msg maelstrom.Message) error {
-		var body map[string]any
+		var body broadcastReq
 		if err := json.Unmarshal(msg.Body, &body); err != nil {
 			return err
 		}
 
-		m := body["message"]
-		v := m.(float64)
-		store.Add(v)
-		bc.Add(v)
-		rsp := &model.SimpleResp{Type: "broadcast_ok"}
-		return n.Reply(msg, rsp)
+		if store.Add(body.Message) {
+			bc.Add(body.Message)
+		}
+		return n.Reply(msg, &model.SimpleResp{Type: "broadcast_ok"})
 	})
 
 	n.Handle("gossip", func(msg maelstrom.Message) error {
@@ -40,26 +46,16 @@ func main() {
 		}
 
 		store.AddAll(body.Messages)
-
-		return n.Reply(msg, body)
+		return n.Reply(msg, &model.SimpleResp{Type: "gossip_ok"})
 	})
 
 	n.Handle("read", func(msg maelstrom.Message) error {
-		var body map[string]any
-		if err := json.Unmarshal(msg.Body, &body); err != nil {
-			return err
-		}
-
-		body["messages"] = store.ReadAll()
-		body["type"] = "read_ok"
-
-		return n.Reply(msg, body)
+		return n.Reply(msg, &readResp{Type: "read_ok", Messages: store.ReadAll()})
 	})
 
 	n.Handle("topology", func(msg maelstrom.Message) error {
-		rsp := &model.SimpleResp{Type: "topology_ok"}
 		bc.Start(n)
-		return n.Reply(msg, rsp)
+		return n.Reply(msg, &model.SimpleResp{Type: "topology_ok"})
 	})
 
 	if err := n.Run(); err != nil {

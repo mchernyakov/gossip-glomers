@@ -1,40 +1,40 @@
 SHELL=/bin/bash -o pipefail
 
 build-echo:
-	go build -o build/bin/echo cmd/echo.go
+	go build -o build/bin/echo ./cmd/echo
 
 build-unique-ids:
-	go build -o build/bin/unique-ids cmd/unique_ids.go
+	go build -o build/bin/unique-ids ./cmd/unique-ids
 
 build-broadcast:
-	go build -o build/bin/broadcast cmd/broadcast.go
+	go build -o build/bin/broadcast ./cmd/broadcast
 
 build-broadcast-d:
-	go build -o build/bin/broadcast-d cmd/broadcast_d.go
+	go build -o build/bin/broadcast-d ./cmd/broadcast-d
 
 build-broadcast-e:
-	go build -o build/bin/broadcast-e cmd/broadcast_e.go
+	go build -o build/bin/broadcast-e ./cmd/broadcast-e
 
 build-counter:
-	go build -o build/bin/maelstrom-counter cmd/counter.go
+	go build -o build/bin/maelstrom-counter ./cmd/counter
 
 build-kafka:
-	go build -o build/bin/maelstrom-kafka cmd/kafka.go
+	go build -o build/bin/maelstrom-kafka ./cmd/kafka
 
 build-kafka-b:
-	go build -o build/bin/maelstrom-kafka-b cmd/kafka_b.go
+	go build -o build/bin/maelstrom-kafka-b ./cmd/kafka-b
 
 build-kafka-c:
-	go build -o build/bin/maelstrom-kafka-c cmd/kafka_c.go
+	go build -o build/bin/maelstrom-kafka-c ./cmd/kafka-c
 
 build-txn:
-	go build -o build/bin/maelstrom-txn cmd/txn.go
+	go build -o build/bin/maelstrom-txn ./cmd/txn
 
 build-txn-b:
-	go build -o build/bin/maelstrom-txn-b cmd/txn_b.go
+	go build -o build/bin/maelstrom-txn-b ./cmd/txn-b
 
 build-txn-c:
-	go build -o build/bin/maelstrom-txn-c cmd/txn_c.go
+	go build -o build/bin/maelstrom-txn-c ./cmd/txn-c
 
 test-echo:
 	@cd maelstrom; ./maelstrom test -w echo --bin ../build/bin/echo --node-count 1 --time-limit 10

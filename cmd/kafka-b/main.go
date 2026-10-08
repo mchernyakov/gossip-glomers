@@ -31,7 +31,9 @@ func main() {
 		state.Mu.Lock()
 		defer state.Mu.Unlock()
 
-		internal.CheckLeader(state, n, kv)
+		if err := internal.CheckLeader(state, n, kv); err != nil {
+			return err
+		}
 
 		if state.Leader == n.ID() {
 			key := body["key"].(string)
@@ -60,7 +62,9 @@ func main() {
 		state.Mu.Lock()
 		defer state.Mu.Unlock()
 
-		internal.CheckLeader(state, n, kv)
+		if err := internal.CheckLeader(state, n, kv); err != nil {
+			return err
+		}
 
 		if state.Leader == n.ID() {
 			data := body["offsets"].(map[string]any)
@@ -88,7 +92,9 @@ func main() {
 		state.Mu.Lock()
 		defer state.Mu.Unlock()
 
-		internal.CheckLeader(state, n, kv)
+		if err := internal.CheckLeader(state, n, kv); err != nil {
+			return err
+		}
 		resp := make(map[string]any)
 
 		if state.Leader == n.ID() {
@@ -121,7 +127,9 @@ func main() {
 		state.Mu.Lock()
 		defer state.Mu.Unlock()
 
-		internal.CheckLeader(state, n, kv)
+		if err := internal.CheckLeader(state, n, kv); err != nil {
+			return err
+		}
 
 		if state.Leader == n.ID() {
 			data := body["offsets"].(map[string]any)
